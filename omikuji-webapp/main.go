@@ -16,13 +16,18 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, result)
+	var msg string
+	if name := r.FormValue("p"); name != "" {
+		msg = fmt.Sprintf("%sさんの運勢は「%s」です！", name, result)
+	} else {
+		msg = fmt.Sprintf("運勢は「%s」です！", result)
+	}
+	fmt.Fprint(w, msg)
 }
 
 func shuffle() {
 	rand.Seed(time.Now().Unix())
 	r := rand.Intn(9)
-	fmt.Println(r)
 	switch r {
 	case 0, 1:
 		result = "大吉"
