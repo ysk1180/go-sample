@@ -1,13 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"net/http"
+	"text/template"
 	"time"
 )
 
-var result string
+var tmpl = template.Must(template.New("msg").Parse("<html><body>{{if .Name}}{{.Name}}さんの{{end}}運勢は<b>「{{.Result}}」</b>です！</body></html>"))
+
+type Message struct {
+	Name   string
+	Result string
+}
 
 func main() {
 	shuffle()
@@ -16,19 +21,16 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	var msg string
-	if name := r.FormValue("p"); name != "" {
-		msg = fmt.Sprintf("%sさんの運勢は「%s」です！", name, result)
-	} else {
-		msg = fmt.Sprintf("運勢は「%s」です！", result)
-	}
-	fmt.Fprint(w, msg)
+	msg := Message{r.FormValue("p"), omikuji()}
+	tmpl.Execute(w, msg)
 }
 
 func shuffle() {
 	rand.Seed(time.Now().Unix())
-	r := rand.Intn(9)
-	switch r {
+}
+
+func omikuji() (result string) {
+	switch rand.Intn(9) {
 	case 0, 1:
 		result = "大吉"
 	case 2, 3, 4:
@@ -40,4 +42,5 @@ func shuffle() {
 	default:
 		result = "大凶"
 	}
+	return
 }
